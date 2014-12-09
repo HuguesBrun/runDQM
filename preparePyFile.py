@@ -31,7 +31,7 @@ file = open("listSample","r")
 jobs = file.readlines()
 file.close()
 
-file = open("RECOUP15.py","r")
+file = open("hlt_HLT.py","r")
 scriptLine = file.readlines()
 file.close()
 
@@ -55,7 +55,7 @@ while (listIterator<sizeList):
         print "taille=",len(theFileList)
         nbFileInside = 0   
         iteFile=iteFile+1
-        outFile = open("recoAndValidation"+theJob+"_"+str(iteFile)+".py","w")
+        outFile = open("hlt_"+theJob+"_"+str(iteFile)+".py","w")
         for line in scriptLine:
             if len(re.split("theRAWfiles",line))> 1:
             	for theSingleFile in theFileList:
@@ -65,8 +65,11 @@ while (listIterator<sizeList):
                         theFileList.remove(theSingleFile)
 			nbFileInside = nbFileInside+1
             	continue
-            if len(re.split("step3_inDQM",line))> 1:
-            	outFile.write("fileName = cms.untracked.string('/tmp/hbrun/dqmFile_"+theJob+"_"+str(iteFile)+".root'),\n")
+#            if len(re.split("step3_inDQM",line))> 1:
+#            	outFile.write("fileName = cms.untracked.string('/tmp/hbrun/dqmFile_"+theJob+"_"+str(iteFile)+".root'),\n")
+ #           	continue
+            if len(re.split("fileName =",line))> 1:
+            	outFile.write("fileName = cms.untracked.string('/tmp/hbrun/rawFile_"+theJob+"_"+str(iteFile)+".root'),\n")
             	continue
             outFile.write(line)
 
