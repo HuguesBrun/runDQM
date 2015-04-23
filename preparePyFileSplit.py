@@ -6,6 +6,9 @@ import commands
 import das_client
 import json
 
+nbJobs=2
+eventPerJobs=500
+
 def listFichier(theRelease, theSample, dataTier, tag):
 	theQuery = "file dataset=/"+theSample+"*/"+theRelease+"-"+tag+"*/"+dataTier
 	jsondict = das_client.get_data('https://cmsweb.cern.ch', theQuery, 0, 0, False)
@@ -52,20 +55,31 @@ while (listIterator<sizeList):
     iteFile = 0
     theFileList = listFichier(sampleRelease, theJob, "GEN-SIM-DIGI-RAW-HLTDEBUG",sampleTag)
     for file in theFileList:
-#    while (len(theFileList)>0):
         print "taille=",len(theFileList)
-        nbFileInside = 0   
-        iteFile=iteFile+1
-        outFile = open("recoAndValidation"+theJob+"_"+str(iteFile)+".py","w")
-        for line in scriptLine:
-            print line
-            if len(re.split("theRAWfiles",line))> 1:
-                outFile.write("'"+file+"',\n")
-            	continue
-            if len(re.split("step2",line))> 1:
-            	outFile.write("fileName = cms.untracked.string('/tmp/hbrun/step2file_"+theJob+"_"+str(iteFile)+".root'),\n")
-            	continue
-            outFile.write(line)
+        iteSplit = 0
+        while (iteSplit<nbJobs):
+            iteFile=iteFile+1
+            iteSplit = iteSplit+1
+            outFile = open("recoAndValidation"+theJob+"_"+str(iteFile)+".py","w")
+            for line in scriptLine:
+                print line
+                prevLine = ""
+                if (scriptLine.index(line)>0):
+                    prevLine=scriptLine[scriptLine.index(line)-1]
+                if len(re.split("theRAWfiles",line))> 1:
+                    outFile.write("'"+file+"',\n")
+                    continue
+                if len(re.split("step2",line))> 1:
+                    outFile.write("fileName = cms.untracked.string('/tmp/hbrun/step2file_"+theJob+"_"+str(iteFile)+".root'),\n")
+                    continue
+                if len(re.split("secondaryFileNames",line))> 1:
+                    outFile.write("skipEvents=cms.untracked.uint32("+str((iteSplit-1)*eventPerJobs)+"),\n")
+                    outFile.write(line)
+                    continue
+                if len(re.split("maxEvents",prevLine))> 1:
+                    outFile.write("input = cms.untracked.int32("+str(eventPerJobs)+")\n")
+                    continue
+                outFile.write(line)
 
 
 
